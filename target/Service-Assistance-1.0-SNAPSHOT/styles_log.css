@@ -1,0 +1,101 @@
+body {
+    background-image: url(img/pic2.jpg);
+    background-size: cover;
+    /*background-position: center center;*/
+    font-family: serif;
+    font-size: 18px;
+}
+
+.login {
+    margin: 150px auto 20px auto;
+    height: 400px;
+    width: 500px;
+    background-color: mintcream;
+    border-radius: 20px;
+    padding-top: 1px;
+}
+
+.login fieldset {
+    display: block;
+    /*position: absolute;*/
+    margin: 20px auto 20px auto;
+    width: 400px;
+    border: 2px solid #777;
+    background-color: gainsboro;
+    border-radius: 10px;
+    text-align: right;
+}
+
+.login fieldset legend {
+    background-color: gold;
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    padding: 10px 20px;
+    text-align: left;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.login fieldset label {
+    font-family: serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    font-family: serif;
+    font-size: 18px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+}
+
+input[type="password"] {
+    font-family: serif;
+    font-size: 18px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+}
+
+input[type="submit"] {
+    border: 2px solid #006633;
+    width: 90px;
+    height: 35px;
+    background-color: #009966;
+    color: #FFFFFF;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 0.15em;
+    font-style: italic;
+}
+
+input[type="submit"]:hover {
+    background-color: #00CC33;
+    cursor: pointer;
+}
+
+input[type="text"]:focus,
+input[type="text"]:hover {
+    border: 1px solid red;
+}
+
+input[type="password"]:focus,
+input[type="password"]:hover {
+    border: 1px solid red;
+}
+
+.login fieldset a {
+    display: block;
+    font-family: cursive;
+    font-style: italic;
+    font-size: 18px;
+    text-decoration: none;
+    text-align: center;
+    color: #000000;
+}
+
+.login fieldset a:hover {
+    color: #cc3333;
+    background-color: #ffffff;
+}

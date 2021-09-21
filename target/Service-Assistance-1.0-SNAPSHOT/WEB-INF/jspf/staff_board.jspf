@@ -1,0 +1,73 @@
+<%-- any content can be specified here e.g.: --%>
+<%@page import="app.model.Orders"%>
+<%@page import="java.util.Locale"%>
+<%@page import="app.model.TimeMashine"%>
+<%@page import="java.time.format.DateTimeFormatter"%>
+<%@ page pageEncoding="UTF-8" %>
+<div class="staff_board">
+    <div class="navigation">
+        <%
+            // формат для отображения даты выбранного дня на панели навигации
+            DateTimeFormatter today = DateTimeFormatter.ofPattern("dd MMMM yyyy EEEE");
+            // позволяет выбирать дату на панели навигации
+            TimeMashine time = (TimeMashine) session.getAttribute("time");
+            // заказ-наряд
+            Orders orders = (Orders) session.getAttribute("orders");
+        %>
+        <p><b><%=time.getTime().format(today).toString()%></b></p>
+        <form id="time" action="ControlTime" method="POST">
+            <input type="submit" id="sel" name="previosDay" value="&lt;Пред. день">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </form>
+        <form id="time" action="ControlTime" method="POST">
+            <input type="submit" id="sel" name="today" value="|Сегодня|">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </form>
+        <form id="time" action="ControlTime" method="POST">
+            <input type="submit" id="sel" name="nextDay" value="След. день&gt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </form>
+        <form id="time" action="ControlTime" method="POST">
+            <label for="data"><b>Дата:</b></label>
+            <input type="date" id="seldate" name="date">
+            <input type="submit" id="ref" name="refresh" value="&circlearrowright;">
+        </form>
+    </div>
+    <div class="orders">
+        <%
+            if (orders != null) {
+                for (int i = 0; i < orders.amountOrder(); i++) {
+        %>
+        <div class="zakaz">
+            <p>
+                <b>| <%= orders.getOrder(i).getClockEvent()%> | 
+                    <%=orders.getOrder(i).getClient().getSurname()%> 
+                    <%=orders.getOrder(i).getClient().getName()%> | 
+                    <%=orders.getOrder(i).getClient().getTelephone()%> | 
+                    <%=orders.getOrder(i).getUserAuto().getPlateNumber()%> | 
+                    ТО(<%=orders.getOrder(i).getMileage() * 1000%> : 
+                    <%=orders.getOrder(i).getAge()%> 
+                    <%=(orders.getOrder(i).getAge() < 5 ? "год(а)" : "лет")%>) |</b>
+            </p>
+            <form id="time" action="PdfServlet" method="POST">
+                <button type="submit" id="sel" name="view" 
+                        value="<%=orders.getOrder(i).getOrderNumber()%>">
+                    Подробнее</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </form>
+            <form id="time" action="OrdersControlServlet" method="POST">
+                <button type="submit" id="sel" name="delete" 
+                        value="<%=orders.getOrder(i).getOrderNumber()%>">
+                    Удалить</button>
+            </form>
+        </div>
+        <%
+            }
+        } else {
+        %>
+        <div class="zakaz">
+            <h2 style="text-align: center; margin-top: 10px">
+                <b>Записи отсутствуют</b>
+            </h2>
+        </div>
+        <%
+            }
+        %>
+    </div>
+</div>

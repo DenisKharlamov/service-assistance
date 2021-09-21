@@ -1,0 +1,390 @@
+<%-- any content can be specified here e.g.: --%>
+<%@page import="java.time.LocalDate"%>
+<%@page import="app.model.Event"%>
+<%@page import="java.util.Locale"%>
+<%@page import="app.model.TimeMashine"%>
+<%@page import="java.time.LocalDateTime"%>
+<%@page import="java.time.format.DateTimeFormatter"%>
+<%@page import="java.util.Date"%>
+<%@page import="app.model.Staff"%>
+<%@ page pageEncoding="UTF-8" %>
+<div class="board">
+    <table id="tboard">
+        <%
+            // набор шаблонов даты для последующего преобразования
+            DateTimeFormatter today = DateTimeFormatter.ofPattern("dd MMMM yyyy EEEE");
+            DateTimeFormatter today1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter year = DateTimeFormatter.ofPattern("yyyy");
+            DateTimeFormatter month = DateTimeFormatter.ofPattern("MMMM").withLocale(Locale.ENGLISH);
+            DateTimeFormatter day = DateTimeFormatter.ofPattern("dd");
+            // класс для перемещения во времени с целью записи на последующие дни
+            TimeMashine time = (TimeMashine) session.getAttribute("time");
+        %>
+        <tbody>
+            <tr>
+                <td bgcolor="#ffff66" height="50"><b><%=time.getTime().format(today).toString()%></b></td>
+                <td colspan="12" bgcolor="#ffff66">
+                    <form id="time" action="ControlTime" method="POST">
+                        <input type="submit" id="sel" name="previosDay" value="&lt;Пред. день">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </form>
+                    <form id="time" action="ControlTime" method="POST">
+                        <input type="submit" id="sel" name="today" value="|Сегодня|">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </form>
+                    <form id="time" action="ControlTime" method="POST">
+                        <input type="submit" id="sel" name="nextDay" value="След. день&gt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </form>
+                    <form id="time" action="ControlTime" method="POST">
+                        <label for="data"><b>Дата:</b></label>
+                        <input type="date" id="seldate" name="date" 
+                               min="<%=LocalDate.now().format(today1)%>"
+                               max="<%=LocalDate.now().plusMonths(1).format(today1)%>">
+                        <input type="submit" id="ref" name="refresh" value="&circlearrowright;">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td bgcolor="gainsboro" height="50"><b>Время</b></td>
+                <td bgcolor="gainsboro"><b>09:00</b></td>
+                <td bgcolor="gainsboro"><b>10:00</b></td>
+                <td bgcolor="gainsboro"><b>11:00</b></td>
+                <td bgcolor="gainsboro"><b>12:00</b></td>
+                <td bgcolor="gainsboro"><b>13:00</b></td>
+                <td bgcolor="gainsboro"><b>14:00</b></td>
+                <td bgcolor="gainsboro"><b>15:00</b></td>
+                <td bgcolor="gainsboro"><b>16:00</b></td>
+                <td bgcolor="gainsboro"><b>17:00</b></td>
+                <td bgcolor="gainsboro"><b>18:00</b></td>
+                <td bgcolor="gainsboro"><b>19:00</b></td>
+                <td bgcolor="gainsboro"><b>20:00</b></td>
+            </tr>
+            <tr>
+                <td bgcolor="gainsboro"><b>Персонал</b></td>
+                <td bgcolor="gainsboro" colspan="12"></td>
+            </tr>
+            <%
+                // получаем персонал автосервиса
+                Staff staff = (Staff) application.getAttribute("staff");
+                if (staff != null) {
+                    // получаем все существующие записи на ТО
+                    Event event = (Event) application.getAttribute("event");
+                    String[] colorChooser = {"#ffa64d", "#ffbf80", "#ffd9b3", "#ffffcc", "#ffcccc",
+                        "#ccccff", "#ccffff", "#ffffff"};
+                    // количество мастеров
+                    int e = staff.amountEmployee();
+                    for (int i = 0; i < e; i++) {
+                        String color = colorChooser[(int) (Math.random() * colorChooser.length)];
+            %>
+            <tr>
+                <td bgcolor="<%=color%>"><b>Мастер: <%=staff.getEmployeeIndex(i).getName() + " " + staff.getEmployeeIndex(i).getSurname()%></b></td>
+                <td bgcolor="<%=color%>" colspan="12"></td>
+            </tr>
+            <%
+                // количество механиков
+                int m = staff.getEmployeeIndex(i).amountMechanic();
+                for (int k = 0; k < m; k++) {%>
+            <tr>
+                <td height="40" bgcolor="<%=color%>"><b>Механик: <%=staff.getEmployeeIndex(i).getMechanic(k).getName() + " " + staff.getEmployeeIndex(i).getMechanic(k).getSurname()%></b></td>
+                <%
+                    // проверяем по графику работает ли механик сегодня
+                    if (staff.getEmployeeIndex(i).getMechanic(k).isWork(Integer.parseInt(time.getTime().format(year).toString()),
+                            time.getTime().format(month).toString(), Integer.parseInt(time.getTime().format(day).toString()))) {
+                        // время со скольки сегодня у механика начинается смена
+                        int clock = staff.getEmployeeIndex(i).getMechanic(k).whatTimeIsToday(Integer.parseInt(time.getTime().format(year).toString()),
+                                time.getTime().format(month).toString(), Integer.parseInt(time.getTime().format(day).toString()));
+                        // в зависимости от того со скольки механик начинает работать, формируем форму для записи
+                        switch (clock) {
+                            case 9:
+                                // проверяем не занято ли это время уже заказом(точность в часах)
+                                if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                                        Integer.parseInt(time.getTime().format(year).toString()),
+                                        time.getTime().format(month).toString(),
+                                        Integer.parseInt(time.getTime().format(day).toString()),
+                                        9,
+                                        11)) {
+
+
+                %>
+                <td colspan="3" bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="9:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                    // если время уже занято форма для записи не выводится
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                        }
+                        if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                                Integer.parseInt(time.getTime().format(year).toString()),
+                                time.getTime().format(month).toString(),
+                                Integer.parseInt(time.getTime().format(day).toString()),
+                                12,
+                                14)) {
+                    %>
+                <td colspan="3" bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="12:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                        }
+                    %>
+                <td bgcolor="#999966"></td>
+                <%
+                    if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                            Integer.parseInt(time.getTime().format(year).toString()),
+                            time.getTime().format(month).toString(),
+                            Integer.parseInt(time.getTime().format(day).toString()),
+                            16,
+                            18)) {
+                %>
+                <td colspan="3"  bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="16:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                        }%>
+                <td colspan="2" bgcolor="#999966"></td>
+                <%
+                        break;
+                    case 10:
+                %>
+                <td bgcolor="#999966"></td>
+                <%
+                    if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                            Integer.parseInt(time.getTime().format(year).toString()),
+                            time.getTime().format(month).toString(),
+                            Integer.parseInt(time.getTime().format(day).toString()),
+                            10,
+                            12)) {
+                %>
+                <td colspan="3" bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="10:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                        }
+                        if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                                Integer.parseInt(time.getTime().format(year).toString()),
+                                time.getTime().format(month).toString(),
+                                Integer.parseInt(time.getTime().format(day).toString()),
+                                13,
+                                15)) {
+                    %>
+                <td colspan="3" bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="13:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                        }
+                    %>
+                <td bgcolor="#999966"></td>
+                <%
+                    if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                            Integer.parseInt(time.getTime().format(year).toString()),
+                            time.getTime().format(month).toString(),
+                            Integer.parseInt(time.getTime().format(day).toString()),
+                            17,
+                            19)) {
+                %>
+                <td colspan="3" bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="17:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                        }
+                    %>
+                <td bgcolor="#999966"></td>
+                <%
+                        break;
+                    case 11:
+                %>
+                <td colspan="2" bgcolor="#999966"></td>
+                <%
+                    if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                            Integer.parseInt(time.getTime().format(year).toString()),
+                            time.getTime().format(month).toString(),
+                            Integer.parseInt(time.getTime().format(day).toString()),
+                            11,
+                            13)) {
+                %>
+                <td colspan="3" bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="11:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                        }
+                    %>
+                <td bgcolor="#999966"></td>
+                <%
+                    if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                            Integer.parseInt(time.getTime().format(year).toString()),
+                            time.getTime().format(month).toString(),
+                            Integer.parseInt(time.getTime().format(day).toString()),
+                            15,
+                            17)) {
+                %>
+                <td colspan="3" bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="15:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                        }
+                        if (event.isAvailableTime(staff.getEmployeeIndex(i).getMechanic(k).getId(),
+                                Integer.parseInt(time.getTime().format(year).toString()),
+                                time.getTime().format(month).toString(),
+                                Integer.parseInt(time.getTime().format(day).toString()),
+                                18,
+                                20)) {
+                    %>
+                <td colspan="3"  bgcolor="#99ccff">
+                    <form action="EventServlet" method="POST">
+                        <input id="zap" type="submit" name="<%=staff.getEmployeeIndex(i).getMechanic(k).getId()%>" value="18:00">
+                    </form>
+                </td>
+                <%
+                } else {
+                %>
+                <td colspan="3" bgcolor="#ff3333"><p id="car"></p></td>
+                    <%
+                            }
+                            break;
+                        default:
+                    %>
+                <td colspan="2" bgcolor="#999966"></td>
+                <td colspan="3" bgcolor="#99ccff"><p id="car"></p></td>
+                <td bgcolor="#999966"></td>
+                <td colspan="3" bgcolor="#99ccff"><p id="car"></p></td>
+                <td colspan="3"  bgcolor="#99ccff"><p id="car"></p></td>
+                    <%
+                        }
+                    } else {
+                        // если сегодня не рабочий день выводим надпись выходной
+                    %>
+                <td style="background-color: #999966; font-size: 21px; font-weight: bold;" colspan="12"><b>В ы х о д н о й</b></td>
+                <%
+                            }
+                        }
+                    }%>
+            </tr>
+            <%
+            } else {
+            %>
+            <tr>
+                <td bgcolor="#ffa64d"><b>Мастер: Не назначено</b></td>
+                <td bgcolor="#ffa64d" colspan="12"></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffa64d"><b>Механик: Не назначено</b></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Sokolov" value="9:00"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Sokolov" value="12:00"></td>
+                <td bgcolor="#999966"></td>
+                <td colspan="3"  bgcolor="#ff3333">
+                    <p id="car">
+                    </p>
+                </td>
+                <td colspan="2" bgcolor="#999966"></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffa64d"><b>Механик: Не назначено</b></td>
+                <td bgcolor="#999966"></td>
+                <td colspan="3" bgcolor="#ff3333">
+                    <p id="car">
+                    </p>
+                </td>
+                <td style="color: #ffffcc" colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Lebedev" value="13:00"></td>
+                <td bgcolor="#999966"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Lebedev" value="17:00"></td>
+                <td bgcolor="#999966"></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffa64d"><b>Механик: Не назначено</b></td>
+                <td colspan="2" bgcolor="#999966"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Solowev" value="11:00"></td>
+                <td bgcolor="#999966"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Solowev" value="15:00"></td>
+                <td colspan="3"  bgcolor="#99ccff">
+                    <input id="zap" type="submit" name="Solowev" value="18:00">
+                </td>
+            </tr>
+            <tr>
+                <td bgcolor="#ffbf80"><b>Мастер: Не назначено</b></td>
+                <td bgcolor="#ffbf80" colspan="12"></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffbf80"><b>Механик: Не назначено</b></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Ershov" value="9:00"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Ershov" value="12:00"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Ershov" value="15:00"></td>
+                <td colspan="3"  bgcolor="#99ccff"><input id="zap" type="submit" name="Ershov" value="18:00"></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffbf80"><b>Механик: Не назначено</b></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Karpov" value="9:00"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Karpov" value="12:00"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Karpov" value="15:00"></td>
+                <td colspan="3"  bgcolor="#99ccff"><input id="zap" type="submit" name="Karpov" value="18:00"></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffbf80"><b>Механик: Не назначено</b></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Chshukin" value="9:00"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Chshukin" value="12:00"></td>
+                <td colspan="3" bgcolor="#99ccff"><input id="zap" type="submit" name="Chshukin" value="15:00"></td>
+                <td colspan="3"  bgcolor="#99ccff"><input id="zap" type="submit" name="Chshukin" value="18:00"></td>
+            </tr>
+            <tr>
+                <td bgcolor="#ffd9b3"><b>Мастер: Не назначено</b></td>
+                <td bgcolor="#ffd9b3" colspan="12"></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffd9b3"><b>Механик: Не назначено</b></td>
+                <td colspan="12" bgcolor="#999966"><b>Выходной</b></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffd9b3"><b>Механик: Не назначено</b></td>
+                <td colspan="12" bgcolor="#999966"><b>Выходной</b></td>
+            </tr>
+            <tr>
+                <td height="40" bgcolor="#ffd9b3"><b>Механик: Не назначено</b></td>
+                <td colspan="12" bgcolor="#999966"><b>Выходной</b></td>
+            </tr>
+            <%}%>
+        </tbody>
+    </table>
+</div>

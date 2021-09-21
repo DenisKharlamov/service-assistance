@@ -1,0 +1,136 @@
+body {
+    background-image: url(img/pic2.jpg);
+    /*background-color: #efefef;*/
+    background-size: cover;
+    /*background-position: center center;*/
+    font-family: serif;
+    font-size: 18px;
+    margin: 0px;
+    padding: 30px;
+}
+
+.page {
+    position: relative;
+    width: 1600px;
+    height: 900px;
+    margin: 0px auto 0px auto;
+    border: 2px solid #777;
+    border-radius: 20px;
+    background-image: url(img/fon_reg.jpg);
+}
+
+.login {
+    /*    position: absolute;
+        margin-left: 500px;
+        margin-top: 190px;*/
+    margin: 100px auto 0px auto;
+    height: 545px;
+    width: 600px;
+    background-color: mintcream;
+    border-radius: 20px;
+    padding-top: 1px;
+}
+
+.login fieldset {
+    display: block;
+    /*position: absolute;*/
+    margin: 20px auto 0px auto;
+    width: 500px;
+    border: 2px solid #777;
+    background-color: gainsboro;
+    border-radius: 10px;
+    text-align: right;
+}
+
+.login fieldset legend {
+    background-color: gold;
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    padding: 10px 20px;
+    text-align: left;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.login fieldset label {
+    font-family: serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    font-family: serif;
+    font-size: 18px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+}
+
+input[type="email"] {
+    font-family: serif;
+    font-size: 18px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+}
+
+input[type="password"] {
+    font-family: serif;
+    font-size: 18px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+}
+
+input[type="submit"] {
+    border: 2px solid #006633;
+    width: 150px;
+    height: 35px;
+    background-color: #009966;
+    color: #FFFFFF;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 0.15em;
+    font-style: italic;
+}
+
+input[type="submit"]:hover {
+    background-color: #00CC33;
+    cursor: pointer;
+}
+
+input[type="text"]:focus,
+input[type="text"]:hover {
+    border: 1px solid red;
+}
+
+input[type="password"]:focus,
+input[type="password"]:hover {
+    border: 1px solid red;
+}
+
+input[type="email"]:focus,
+input[type="email"]:hover {
+    border: 1px solid red;
+}
+
+.login fieldset a {
+    display: block;
+    font-family: cursive;
+    font-style: italic;
+    font-size: 18px;
+    text-decoration: none;
+    text-align: center;
+    color: #000000;
+}
+
+.login fieldset a:hover {
+    color: #cc3333;
+    background-color: #ffffff;
+}
+
+#msginfo {
+    border: 2px solid #006633;
+    border-radius: 10px;
+    background-color: whitesmoke;
+    margin: 0px auto 0px auto;
+}
