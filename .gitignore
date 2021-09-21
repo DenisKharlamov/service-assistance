@@ -6,9 +6,18 @@
 **/nbproject/Makefile-*.mk
 **/nbproject/Package-*.bash
 build/
+target/
 nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+
+# Class Files #
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
 
 # End of https://www.toptal.com/developers/gitignore/api/netbeans
